@@ -1,0 +1,39 @@
+version: "3.9"
+services:
+  proxy:
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/certbot/conf:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+      - /var/log/nginx:/var/log/nginx_local
+      - ./nginx/www:/usr/share/nginx/html
+      - ./www_data/:/var/www/html
+      - ./output/:/usr/share/output
+
+  certbot:
+    image: certbot/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    volumes:
+      - ./nginx/certbot/conf:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+  
+  gophish:
+    image: gophish/gophish
+    restart: always
+    ports:
+      - 127.0.0.1:3333:3333
+    volumes:
+      - ./db_storage:/opt/gophish/db_storage
+      - ./gophish/config.json:/opt/gophish/config.json
+  
+  php:
+    image: php:fpm-alpine
+    volumes:
+      - ./www_data/:/var/www/html
+      - ./output/:/usr/share/output
