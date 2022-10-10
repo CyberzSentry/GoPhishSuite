@@ -1,0 +1,4 @@
+# Ignore everything in this directory. Dir for storying sqlite database.
+*
+# Except this file
+!.gitignore
